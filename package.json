@@ -1,0 +1,96 @@
+{
+  "name": "raycast-prompt-coach",
+  "title": "Prompt Coach",
+  "description": "Interactive AI prompt builder using flipped learning - AI asks you questions to create better prompts",
+  "icon": "command-icon.png",
+  "author": "imsang-yeob",
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Build Better Prompt",
+      "description": "Create better prompts through AI-guided questions",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "apiKey",
+      "type": "password",
+      "required": true,
+      "title": "Google API Key",
+      "description": "Your Google API Key for Gemini"
+    },
+    {
+      "description": "Which model Gemini for Raycast uses by default (unless overriden by individual commands).",
+      "name": "defaultModel",
+      "title": "Model",
+      "type": "dropdown",
+      "required": false,
+      "default": "gemini-1.5-flash-latest",
+      "data": [
+        {
+          "title": "Gemini 1.5 Pro",
+          "value": "gemini-1.5-pro-latest"
+        },
+        {
+          "title": "Gemini 1.5 Flash",
+          "value": "gemini-1.5-flash-latest"
+        },
+        {
+          "title": "Gemini 2.0 Flash Experimental",
+          "value": "gemini-2.0-flash-exp"
+        },
+        {
+          "title": "Gemini Experimental 1206",
+          "value": "gemini-exp-1206"
+        },
+        {
+          "title": "Gemini 2.0 Pro Experimental 02-05",
+          "value": "gemini-2.0-pro-exp-02-05"
+        },
+        {
+          "title": "Gemini 2.0 Flash Thinking Experimental",
+          "value": "gemini-2.0-flash-thinking-exp-1219"
+        },
+        {
+          "title": "LearnLM 1.5 Pro Experimental",
+          "value": "learnlm-1.5-pro-experimental"
+        }
+      ]
+    },
+    {
+      "name": "systemPrompt",
+      "type": "textfield",
+      "required": false,
+      "title": "System Prompt",
+      "description": "Custom system prompt for Gemini"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.66.2",
+    "@raycast/utils": "^1.4.8",
+    "gemini-ai": "^2.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.6",
+    "@types/node": "20.8.10",
+    "@types/react": "18.2.27",
+    "eslint": "^8.51.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  },
+  "type": "module"
+}
