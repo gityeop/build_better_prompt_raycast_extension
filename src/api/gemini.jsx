@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Form,
   Detail,
@@ -78,22 +79,33 @@ Example output formats
 // JSON 응답을 마크다운 형식으로 변환
 function formatJsonToMarkdown(jsonString) {
   try {
-    // JSON 파싱 시도
-    const data = JSON.parse(jsonString);
-    
-    if (!data.Question) {
-      // JSON이 아닌 일반 텍스트인 경우 그대로 반환
+    // 빈 응답이나 undefined 처리
+    if (!jsonString || typeof jsonString !== 'string') {
+      return "응답을 기다리는 중...";
+    }
+
+    // 완전한 JSON이 아닐 경우 원본 텍스트 반환
+    if (!jsonString.trim().endsWith("}")) {
       return jsonString;
     }
 
-    // 마크다운 형식으로 변환
-    let markdown = "# 질문\n\n";
+    const data = JSON.parse(jsonString);
+    
+    if (!data || !data.Question || !Array.isArray(data.Question) || data.Question.length === 0) {
+      return jsonString;
+    }
+
+    let markdown = "";
     
     data.Question.forEach((question) => {
+      if (!question || !question.id || !question.text) return;
+      
       markdown += `### ${question.id}. ${question.text}\n\n`;
       
-      if (question.subquestions) {
+      if (question.subquestions && Array.isArray(question.subquestions)) {
         question.subquestions.forEach((subq) => {
+          if (!subq || !subq.id || !subq.text) return;
+          
           markdown += `### ${question.id}.${subq.id}. ${subq.text}\n`;
           markdown += `답변:\n\n---\n\n`;
         });
@@ -102,8 +114,8 @@ function formatJsonToMarkdown(jsonString) {
 
     return markdown;
   } catch (error) {
-    // JSON 파싱에 실패한 경우 원본 텍스트 반환
-    return jsonString;
+    console.error("JSON 파싱 오류:", error);
+    return jsonString || "응답 처리 중 오류가 발생했습니다.";
   }
 }
 
@@ -123,15 +135,15 @@ export default function useGemini(props, { context = undefined, allowPaste = fal
   const [selectedState, setSelected] = useState("");
   const [lastQuery, setLastQuery] = useState("");
   const [lastResponse, setLastResponse] = useState("");
-  const [textarea, setTextarea] = useState("");
-
+  const [answers, setAnswers] = useState({});
+  
   const getResponse = useCallback(
     async (query) => {
       try {
         setLastQuery(query);
         setPage(Pages.Detail);
         setIsLoading(true);
-        setMarkdown("");  // 스트리밍 시작 전 초기화
+        setMarkdown("응답을 기다리는 중...");
 
         await showToast({
           style: Toast.Style.Animated,
@@ -150,25 +162,35 @@ export default function useGemini(props, { context = undefined, allowPaste = fal
           topP: 0.95,
           topK: 64,
           maxOutputTokens: 8192,
-          jsonSchema: true  // JSON 응답 요청
+          jsonSchema: true
         });
 
         let responseText = "";
+        let lastValidJson = "";
         
-        // 스트리밍 응답 처리
         await chat.ask(query, {
           stream: (chunk) => {
-            responseText += chunk;
+            if (!chunk) return;
+            
             try {
-              // 완성된 JSON인 경우에만 파싱 시도
-              const formatted = formatJsonToMarkdown(responseText);
-              setMarkdown(formatted);
+              responseText += chunk;
+              if (responseText.trim().endsWith("}")) {
+                lastValidJson = responseText;
+                const formatted = formatJsonToMarkdown(lastValidJson);
+                setMarkdown(formatted);
+              } else {
+                setMarkdown(responseText);
+              }
             } catch (error) {
-              // JSON이 아직 완성되지 않은 경우 그대로 표시
+              console.error("스트리밍 처리 오류:", error);
               setMarkdown(responseText);
             }
           },
         });
+
+        if (!responseText) {
+          throw new Error("Gemini로부터 응답을 받지 못했습니다.");
+        }
 
         await showToast({
           style: Toast.Style.Success,
@@ -177,7 +199,7 @@ export default function useGemini(props, { context = undefined, allowPaste = fal
         
         setLastResponse(responseText);
       } catch (error) {
-        console.error(error);
+        console.error("Gemini API 오류:", error);
         await showToast({
           style: Toast.Style.Failure,
           title: "오류가 발생했습니다",
@@ -261,7 +283,7 @@ export default function useGemini(props, { context = undefined, allowPaste = fal
             onAction={async () => {
               try {
                 const selectedText = await getSelectedText();
-                setTextarea((text) => text + selectedText);
+                // setTextarea((text) => text + selectedText);
               } catch (error) {
                 await showToast({
                   title: "Could not get the selected text",
@@ -277,8 +299,8 @@ export default function useGemini(props, { context = undefined, allowPaste = fal
       <Form.TextArea
         title="Prompt"
         id="query"
-        value={textarea}
-        onChange={(value) => setTextarea(value)}
+        value=""
+        onChange={(value) => {}}
         placeholder="Ask Gemini a question..."
       />
     </Form>

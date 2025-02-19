@@ -2,7 +2,7 @@
   "name": "raycast-prompt-coach",
   "title": "Prompt Coach",
   "description": "Interactive AI prompt builder using flipped learning - AI asks you questions to create better prompts",
-  "icon": "command-icon.png",
+  "icon": "icon.png",
   "author": "imsang-yeob",
   "categories": [
     "Productivity",
@@ -14,7 +14,8 @@
       "name": "index",
       "title": "Build Better Prompt",
       "description": "Create better prompts through AI-guided questions",
-      "mode": "view"
+      "mode": "view",
+      "icon": "icon.png"
     }
   ],
   "preferences": [
